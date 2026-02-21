@@ -9,10 +9,6 @@ from pyspark.sql.types import (
     StructType, StructField, StringType, DoubleType, ArrayType
 )
 
-# =========================================================
-# ENVIRONMENT CONFIGURATION
-# =========================================================
-
 MODEL_PATH = os.getenv("MODEL_PATH")
 SCALER_PATH = os.getenv("SCALER_PATH")
 S3_BUCKET = os.getenv("S3_BUCKET")
@@ -27,24 +23,13 @@ if not MODEL_PATH or not SCALER_PATH:
 if not S3_BUCKET:
     raise ValueError("S3_BUCKET not set in environment variables")
 
-# =========================================================
-# LOAD MODEL & SCALER
-# =========================================================
 
 print("🔁 Loading ML model and scaler...")
 model = joblib.load(MODEL_PATH)
 scaler = joblib.load(SCALER_PATH)
 print("✅ Model and scaler loaded successfully.")
 
-# =========================================================
-# AWS S3 CLIENT
-# =========================================================
-
 s3 = boto3.client("s3")
-
-# =========================================================
-# SPARK SESSION
-# =========================================================
 
 spark = SparkSession.builder \
     .appName("NASA-NEO-Live-Inference-To-S3") \
@@ -56,9 +41,6 @@ spark = SparkSession.builder \
 
 spark.sparkContext.setLogLevel("WARN")
 
-# =========================================================
-# DEFINE NASA NEO SCHEMA
-# =========================================================
 
 neo_schema = StructType([
     StructField("id", StringType()),
@@ -80,10 +62,6 @@ neo_schema = StructType([
         ])
     ))
 ])
-
-# =========================================================
-# READ FROM KAFKA STREAM
-# =========================================================
 
 raw_stream = spark.readStream \
     .format("kafka") \
@@ -120,9 +98,6 @@ df = df.select(
         .cast("double").alias("miss_distance_lunar")
 )
 
-# =========================================================
-# FEATURE ENGINEERING
-# =========================================================
 
 df = df.withColumn(
     "impact_energy_proxy",
@@ -135,10 +110,6 @@ df = df.withColumn(
 )
 
 df = df.withColumn("ingestion_time", current_timestamp())
-
-# =========================================================
-# STREAMING INFERENCE + S3 STORAGE
-# =========================================================
 
 def predict_and_store(batch_df, batch_id):
 
@@ -183,19 +154,15 @@ def predict_and_store(batch_df, batch_id):
         Body=json_data
     )
 
-    print(f"📤 Uploaded batch to S3 → {key}")
+    print(f" Uploaded batch to S3 → {key}")
 
     # Print predictions
     for _, row in pdf.iterrows():
         print(
-            f"🛰️ Asteroid {row['asteroid_id']} | "
+            f" Asteroid {row['asteroid_id']} | "
             f"Prediction: {row['prediction']} | "
             f"Hazard Prob: {row['hazard_probability']:.4f}"
         )
-
-# =========================================================
-# START STREAM
-# =========================================================
 
 query = df.writeStream \
     .foreachBatch(predict_and_store) \
