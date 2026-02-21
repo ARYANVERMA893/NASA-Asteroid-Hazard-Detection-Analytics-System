@@ -1,0 +1,46 @@
+# -----------------------
+# Python
+# -----------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# -----------------------
+# Virtual environments
+# -----------------------
+venv/
+env/
+.venv/
+.conda/
+
+# -----------------------
+# Model files (ML artifacts)
+# -----------------------
+*.pkl
+models/
+artifacts/
+
+# -----------------------
+# Environment variables
+# -----------------------
+.env
+
+# -----------------------
+# Spark checkpoints
+# -----------------------
+spark_checkpoints/
+tmp/
+*.checkpoint
+
+# -----------------------
+# Kafka logs
+# -----------------------
+logs/
+kafka-logs/
+
+# -----------------------
+# OS files
+# -----------------------
+.DS_Store
+Thumbs.db
