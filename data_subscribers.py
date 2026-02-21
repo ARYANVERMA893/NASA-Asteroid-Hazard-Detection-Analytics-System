@@ -23,7 +23,7 @@ producer = KafkaProducer(
     retries=3
 )
 
-print("🚀 Starting NASA NEO streaming (past 7 days → today)...")
+print(" Starting NASA NEO streaming (past 7 days → today)...")
 
 try:
     end_date = datetime.now(UTC)
@@ -38,7 +38,7 @@ try:
         f"end_date={end_str}&"
         f"api_key={API_KEY}"
     )
-    print(f"🌍 Fetching NASA data from {start_str} to {end_str}")
+    print(f" Fetching NASA data from {start_str} to {end_str}")
     response = requests.get(url, timeout=30)
     response.raise_for_status()
     data = response.json()
@@ -55,17 +55,18 @@ try:
             time.sleep(2) 
 
     producer.flush()
-    print("✅ All asteroid events sent successfully.\n")
+    print("All asteroid events sent successfully.\n")
 
     while True:
         time.sleep(60)
         print(
-            f"🟢 Producer alive at "
+            f" Producer alive at "
             f"{datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')} UTC"
         )
 
 except Exception as e:
-    print("❌ Error:", e)
+    print(" Error:", e)
 
 finally:
+
     producer.close()
